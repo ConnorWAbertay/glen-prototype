@@ -26,14 +26,13 @@ function Insert() {
             <form name="insert_form" id="insert_form" onSubmit={(e) => {
                 e.preventDefault()
                 let form = document.forms["insert_form"];
-                invoke("insert_asset", {
-                    info: {
-                        id: 0,
-                        name: form.elements["name"].value,
-                        modelid: parseInt(form.elements["select_model"].value),
-                        typeid: parseInt(form.elements["select_type"].value),
-                        ip: form.elements["ip"].value
-                    }
+                invoke("execute_drop", {
+                    query: "INSERT INTO `glenasset`(`name`, `modelid`, `typeid`, `ip`) VALUES (:name,:modelid,:typeid,:ip)",
+                    params: [form.elements["name"].value,
+                    parseInt(form.elements["select_model"].value),
+                    parseInt(form.elements["select_type"].value),
+                    form.elements["ip"].value
+                ]
                 });
             }}>
                 <input type="text" name="name" placeholder="name"></input>
@@ -81,9 +80,10 @@ function Insert() {
             <h5>Insert Manu</h5>
             <input type="text" id="input_manu" placeholder="manufacturer"></input>
             <button id="insert_manu" onClick={() => {
-                invoke("insert_manu",
+                invoke("execute_drop",
                     {
-                        manu: document.getElementById("input_manu").value
+                        query: "INSERT INTO `glenmanu`(`name`) VALUES (?)",
+                        params: [document.getElementById("input_manu").value]
                     })
             }
             }>INSERT</button>
@@ -91,9 +91,10 @@ function Insert() {
             <h5>Insert Type</h5>
             <input type="text" id="input_type" placeholder="type"></input>
             <button id="insert_type" onClick={() => {
-                invoke("insert_type",
+                invoke("execute_drop",
                     {
-                        glentype: document.getElementById("input_type").value
+                        query: "INSERT INTO `glentype`(`name`) VALUES (?)",
+                        params: [document.getElementById("input_type").value]
                     })
             }
             }>INSERT</button>
@@ -103,10 +104,11 @@ function Insert() {
             <button>AAA</button>
             {manuSelect}
             <button id="insert_model" onClick={() => {
-                invoke("insert_model",
+                invoke("execute_drop",
                     {
-                        model: document.getElementById("input_model").value,
-                        manuid: parseInt(document.getElementById("select_manu").value)
+                        query: "INSERT INTO `glenmodel`(`name`, `manuid`) VALUES (?,?)",
+                        params: [document.getElementById("input_model").value,
+                        parseInt(document.getElementById("select_manu").value)]
                     })
             }
             }>INSERT</button>

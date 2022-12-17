@@ -31,8 +31,7 @@ fn window_loaded(w: Window){
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![assetList, error, window_loaded, update, sql_handler::get_name, sql_handler::insert_manu,
-            sql_handler::insert_model, sql_handler::insert_type, sql_handler::insert_asset])
+        .invoke_handler(tauri::generate_handler![assetList, error, window_loaded, update, sql_handler::get_name, sql_handler::execute_drop])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

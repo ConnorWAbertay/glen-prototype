@@ -19,7 +19,7 @@ JOIN glentype ON glenasset.typeid = glentype.id
 JOIN glenmanu ON glenmodel.manuid = glenmanu.id 
 WHERE ";
 
-const URL: &str = "mysql://sql1904676:cKDwBoIwnvSo@lochnagar.abertay.ac.uk/sql1904676";
+const URL: &str = "///";
 
 pub fn query_assets(query_string: &str) -> Vec<AssetInfo> {
     let opts = Opts::from_url(URL).unwrap();
@@ -76,54 +76,29 @@ pub fn get_name(query : &str) -> Vec<(i32, String)>
     return conn.query(query).unwrap();
 }
 
+
 #[tauri::command]
-pub fn insert_manu(manu : &str)
+pub fn execute_drop(query : &str, params: Vec<serde_json::Value>)
 {
     let opts = Opts::from_url(URL).unwrap();
     let mut conn = Conn::new(opts).unwrap();
 
-    conn.exec_drop("INSERT INTO `glenmanu`(`name`) VALUES (:new_manu)", 
-    params! {
-        "new_manu" => manu
-    }).unwrap();
-}
+    let mut converted_params: Vec<mysql::Value> = Vec::new();
+    for p in params {
+        match p {
+            serde_json::Value::Number(i) => {
+                let result: i64 = i.as_i64().unwrap();
+                converted_params.push(mysql::Value::Int(result))
+              }
+            serde_json::Value::String(i) => {
+                let result: &str = i.as_str();
+                converted_params.push(mysql::Value::Bytes(result.as_bytes().to_vec()))
+            }
+            _ => {
+                //UNHANDLED EXCEPTION
+            }
+        }
+    }
 
-#[tauri::command]
-pub fn insert_type(glentype : &str)
-{
-    let opts = Opts::from_url(URL).unwrap();
-    let mut conn = Conn::new(opts).unwrap();
-
-    conn.exec_drop("INSERT INTO `glentype`(`name`) VALUES (:new_type)", 
-    params! {
-        "new_type" => glentype
-    }).unwrap();
-}
-
-#[tauri::command]
-pub fn insert_model(model : &str, manuid : i32)
-{
-    let opts = Opts::from_url(URL).unwrap();
-    let mut conn = Conn::new(opts).unwrap();
-
-    conn.exec_drop("INSERT INTO `glenmodel`(`name`, `manuid`) VALUES (:model,:manuid)", 
-    params! {
-        "model" => model,
-        "manuid" => manuid
-    }).unwrap();
-}
-
-#[tauri::command]
-pub fn insert_asset(info:UpdateInfo)
-{
-    let opts = Opts::from_url(URL).unwrap();
-    let mut conn = Conn::new(opts).unwrap();
-
-    conn.exec_drop("INSERT INTO `glenasset`(`name`, `modelid`, `typeid`, `ip`) VALUES (:name,:modelid,:typeid,:ip)", 
-    params! {
-        "name" => info.name,
-        "modelid" => info.modelid,
-        "typeid" => info.typeid,
-        "ip" => info.ip
-    }).unwrap();
+    conn.exec_drop(query, converted_params).unwrap();
 }
